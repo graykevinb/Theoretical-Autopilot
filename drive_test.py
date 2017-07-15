@@ -21,6 +21,8 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #SOFTWARE.
 
+#If you want to add a lot of lines of code to your script try the GNU license ;)
+
 import time
 import brickpi3
 from oldschool import *
@@ -30,6 +32,7 @@ BP = brickpi3.BrickPi3()
 #PORT 2: Right Ultrasonic Sensor
 #PORT 1: Front Ultrasonic Sensor
 
+#Initializes all of the sensors.
 BP.set_sensor_type(BP.PORT_1, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 BP.set_sensor_type(BP.PORT_2, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 BP.set_sensor_type(BP.PORT_4, BP.SENSOR_TYPE.NXT_ULTRASONIC)
@@ -61,16 +64,13 @@ def get_ultrasonic(port):
                 readings.append(BP.get_sensor(port))
             except:
                 pass
-<<<<<<< HEAD
-    averaged_reading = (readings[0] + readings [1]) / 2
-    return averaged_reading
-=======
+
     average_reading = (readings[0] + readings[1]) / 2
     return average_reading
->>>>>>> efc8d746d98d01f7f8032d4455bf8244fe3a2c20
 
 def main():
     init()
+    #The following variables are for the PID Loop
     iteration_time = 0.0001
     Kp = 3
     Ki = 0
@@ -79,7 +79,8 @@ def main():
     target_error = 0
     error_prior = 1 
     integral = 1
-    base_pwr = 200
+    #This defines the maxe Degrees Per Second the motor can go at. The Pid Loop will only take away from this number, not add.
+    base_dps = 200
     turning_direction = None
     while True:
         scan_array = []
@@ -94,10 +95,14 @@ def main():
 
         time.sleep(iteration_time)
         error_prior = error
-        if abs(output) > base_pwr:
-            output = base_pwr
+        
+        #This limits how far the PID Loop can go. Optimally I shouldn't need this, but here it is. 
+        if abs(output) > base_dps:
+            output = base_dps
         else:
             pass
+        
+        #Not sure why this here, It's on my todo list to fix.
         if abs(output) < 10 and scan_array[0] > scan_array[1] and error > 10:
             output = base_pwr
         elif abs(output) < 10 and scan_array[1] > scan_array[0] and error > 10:
@@ -105,20 +110,23 @@ def main():
         else:
             pass
 
-            
+        #Compares the sensor readings and turns a left if the Left sensor reads more than the Right and vice versa. 
+        #If neither are greater than each other it will drive forwards, this is there not because the PID Loop demands it,
+        #but because it is logically required.   
         if scan_array[0] > scan_array[1]:
             turning_direction = 'right'
-            BP.set_motor_dps(BP.PORT_D, -base_pwr + abs(output))
-            BP.set_motor_dps(BP.PORT_A, -base_pwr)
+            BP.set_motor_dps(BP.PORT_D, -base_dps + abs(output))
+            BP.set_motor_dps(BP.PORT_A, -base_dps)
             #actual_value = get_ultrasonic()
         elif scan_array[0] < scan_array[1]:
             turning_direction = 'left'
-            BP.set_motor_dps(BP.PORT_D, -base_pwr)
-            BP.set_motor_dps(BP.PORT_A, -base_pwr + abs(output))
+            BP.set_motor_dps(BP.PORT_D, -base_dps)
+            BP.set_motor_dps(BP.PORT_A, -base_dps + abs(output))
         else:
             turning_direction = 'forwards'
-            BP.set_motor_dps(BP.PORT_D, -base_pwr)
-            BP.set_motor_dps(BP.PORT_A, -base_pwr)
+            BP.set_motor_dps(BP.PORT_D, -base_dps)
+            BP.set_motor_dps(BP.PORT_A, -base_dps)
+        #Updates the output.
         update(0, 0, scan_array[1], scan_array[0], turning_direction, error, output, 0, 0)
         time.sleep(iteration_time)
         output = 0
@@ -132,3 +140,7 @@ except KeyboardInterrupt:
     pass
 BP.reset_all()
 reset()
+
+#And the program lived happily ever after.
+#THE END
+#To be continued ...
