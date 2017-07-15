@@ -62,6 +62,7 @@ def get_ultrasonic(port):
                 time.sleep(0.0001)
             try:
                 readings.append(BP.get_sensor(port))
+                break
             except:
                 pass
 
@@ -72,9 +73,9 @@ def main():
     init()
     #The following variables are for the PID Loop
     iteration_time = 0.0001
-    Kp = 3
+    Kp = 15
     Ki = 0
-    Kd = -2
+    Kd = 0
     desired_value = 0
     target_error = 0
     error_prior = 1 
